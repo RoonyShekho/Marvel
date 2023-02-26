@@ -7,7 +7,7 @@ import com.gateway.marvel.data.domain.model.*
 
 
 @Database(
-    entities = [MarvelData::class],
+    entities = [Characters::class],
     version = 1
 )
 @TypeConverters(DatabaseConverter::class)

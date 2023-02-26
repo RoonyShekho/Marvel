@@ -6,5 +6,5 @@ import kotlinx.serialization.SerialName
 @kotlinx.serialization.Serializable
 data class Data(
     @SerialName("results")
-    val marvelData:List<MarvelData>? = null,
+    val marvelData:List<Characters>? = null,
 )

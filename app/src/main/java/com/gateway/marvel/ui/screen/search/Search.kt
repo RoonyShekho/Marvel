@@ -1,13 +1,8 @@
 package com.gateway.marvel.ui.screen.search
 
-import androidx.compose.foundation.lazy.LazyRow
 
-
-import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
@@ -15,15 +10,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
-import com.gateway.marvel.data.domain.model.MarvelData
+import com.gateway.marvel.data.domain.model.Characters
 import com.gateway.marvel.ui.navigation.Screen
 import com.gateway.marvel.ui.screen.common.SearchBar
+import com.skydoves.landscapist.coil.CoilImage
 
 @Composable
 fun Search(
@@ -35,13 +31,14 @@ fun Search(
 
     val state = vm.state
 
+
     var onTrailingClicked by remember { mutableStateOf(false) }
 
-    Log.d("SearchScreen", state.toString())
+    val emptyResponseMessage = vm.emptyResponseMessage
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(onTrailingClicked) {
         if (onTrailingClicked) {
-            if (query.isEmpty()) {
+            if (query.isBlank()) {
                 navController.navigate(Screen.Home.route)
             } else {
                 vm.setQuery("")
@@ -75,11 +72,25 @@ fun Search(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             item {
-                ItemCard(modifier = Modifier.padding(paddingValues), marvelData = state!!)
+                state.marvelData?.let {
+                    if (it.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = emptyResponseMessage)
+                        }
+                    } else {
+                        ItemCard(
+                            modifier = Modifier.padding(paddingValues),
+                            characters = state.marvelData[0]
+                        )
+
+                    }
+                }
             }
 
         }
-
 
     }
 }
@@ -87,7 +98,7 @@ fun Search(
 
 @Composable
 fun ItemCard(
-    marvelData: MarvelData,
+    characters: Characters,
     modifier: Modifier = Modifier
 ) {
 
@@ -96,16 +107,17 @@ fun ItemCard(
         modifier = modifier
     ) {
 
+        val model = "${characters.thumbnail?.path}.${characters.thumbnail?.extension}"
         Row {
-
-            val model = "${marvelData.thumbnail?.path}.${marvelData.thumbnail?.extension}"
-
-            AsyncImage(model = model, contentDescription = null, modifier = Modifier.size(72.dp))
+            CoilImage(
+                imageModel = { model },
+                modifier = Modifier.size(72.dp)
+            )
 
             Column {
-                Text(text = marvelData.title!!, fontWeight = FontWeight.Bold)
+                Text(text = characters.name, fontWeight = FontWeight.Bold)
 
-                Text(text = marvelData.description!!)
+                Text(text = characters.description!!)
             }
 
 
@@ -114,13 +126,11 @@ fun ItemCard(
 
 }
 
-
+/*
 @Composable
 fun CategoriesColumnView(
-    marvelData: MarvelData,
     modifier: Modifier = Modifier,
-    navigateToDetails: (String) -> Unit,
-    comics: List<MarvelData>
+    marvelData:MarvelState
 ) {
 
 
@@ -129,11 +139,11 @@ fun CategoriesColumnView(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "Characters")
+            Text(text = "Series")
 
             LazyRow(modifier = Modifier.padding(horizontal = 16.dp)) {
-                items(comics) {
-                    ItemCard(marvelData = it)
+                items(marvelData.series.items) {
+                    Text(text = it.name)
                 }
             }
 
@@ -142,40 +152,19 @@ fun CategoriesColumnView(
             LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
                 items(marvelData.comics.items) {
                     Text(
-                        text = it.title!!,
+                        text = it.name,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
-
 
                     Text(text = "Stories")
 
                     LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
                         items(marvelData.stories.items) {
-
-                            ItemCard(marvelData)
+                            Text(text = it.name)
                         }
                     }
                 }
             }
         }
     }
-}
-
-
-@Composable
-fun ItemCard(
-    marvelData: MarvelData
-) {
-
-    Surface(shape = RoundedCornerShape(12.dp)) {
-        Column {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                val model = "${marvelData.thumbnail?.path}.${marvelData.thumbnail?.extension}"
-                AsyncImage(model = model, contentDescription = null)
-            }
-
-            Text(text = marvelData.title!!)
-        }
-    }
-
-}
+}*/

@@ -1,31 +1,29 @@
 package com.gateway.marvel.ui.screen.details
 
-import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
-import com.gateway.marvel.data.domain.model.*
+import com.gateway.marvel.R
+import com.gateway.marvel.data.domain.model.Characters
+import com.gateway.marvel.data.utility.checkIfOnline
+import com.skydoves.landscapist.coil.CoilImage
 
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@RequiresApi(Build.VERSION_CODES.N)
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
 @Composable
@@ -35,50 +33,73 @@ fun Details(
 ) {
 
 
-    val state = vm.uiState.value
+    DetailsContent(vm = vm) {
+        navController.popBackStack()
+    }
+
+
+}
+
+
+@ExperimentalMaterialApi
+@ExperimentalComposeUiApi
+@Composable
+fun DetailsContent(vm: DetailsViewModel, onBackPressed: () -> Unit) {
+
+
+    val context = LocalContext.current
+
+    val state = vm.uiState
 
 
     val selectedCategory = vm.selectedCategory
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navController.popBackStack()
-                    }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
 
-                    }
-                },
-                title = { Text(text = selectedCategory) }
-            )
+    if (!checkIfOnline(context)) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Text(text = "No internet connection!")
         }
-    ) {
+    } else {
 
-        state.data?.marvelData?.let { it1 -> MarvelData(it1) }
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            onBackPressed()
+                        }) {
+                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                        }
+                    },
+                    title = { Text(text = selectedCategory) }
+                )
+            }
+        ) { paddingValues ->
+            state.marvelData?.let {
+                MarvelData(it, paddingValues = paddingValues)
+            }
+        }
     }
+
+
 }
-
-
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
-@RequiresApi(Build.VERSION_CODES.N)
 @Composable
-fun MarvelData(characters: List<MarvelData>) {
+fun MarvelData(characters: List<Characters>, paddingValues: PaddingValues) {
 
-    DetailsVerticalGrid(data = characters) {
-        val url = "${it.thumbnail?.path}.${it.thumbnail?.extension}"
-        DetailsGridItemCard(image = url, title = it.title!!) {
 
-        }
-    }
-
+    DetailsVerticalGrid(
+        data = characters, itemContent = {
+            val imageUrl = "${it.thumbnail?.path}.${it.thumbnail?.extension}"
+            DetailsGridItemCard(image = imageUrl, title = it.name)
+        },
+        modifier = Modifier.padding(paddingValues)
+    )
 }
 
 
-@RequiresApi(Build.VERSION_CODES.N)
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
 @Composable
@@ -89,19 +110,15 @@ fun <T> DetailsVerticalGrid(
 ) {
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(30.dp),
-        modifier = modifier
+        columns = GridCells.Fixed(2),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(data.size) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                data.forEach {
-                    itemContent(it)
-                }
-            }
+        items(data) {
+            itemContent(it)
         }
     }
-
-
 }
 
 
@@ -110,27 +127,24 @@ fun <T> DetailsVerticalGrid(
 @Composable
 fun DetailsGridItemCard(
     image: String,
-    title: String,
-    onItemClicked: () -> Unit
+    title: String
 ) {
 
 
     Surface(
-        onClick = onItemClicked,
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.size(200.dp)
+        modifier = Modifier.size(200.dp),
+        elevation = 12.dp
     ) {
         Column {
-
-            AsyncImage(model = image, contentDescription = null)
-
-            Image(
-                painter = painterResource(id = image as Int),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth()
-            )
-
             Text(text = title, textAlign = TextAlign.Start)
+
+            CoilImage(imageModel = { image }, failure = {
+                Image(
+                    painter = painterResource(R.drawable.ic_launcher_background),
+                    contentDescription = null
+                )
+            })
         }
     }
 

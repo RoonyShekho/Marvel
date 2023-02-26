@@ -10,19 +10,18 @@ import com.gateway.marvel.data.domain.model.*
 interface MarvelDao {
 
     @Query("SELECT * FROM marvel_table ORDER BY id ASC")
-    fun getCharacters():MarvelData
+    suspend fun getCharacters():List<Characters>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addCharacters(characters: List<MarvelData>)
+    suspend fun addCharacters(characters: List<Characters>)
 
 
     @Query(  """
             SELECT * 
             FROM marvel_table
-            WHERE LOWER(title) LIKE '%' || LOWER(:query)
-     
+            WHERE name LIKE '%' || :query || '%'
         """)
-    suspend fun searchCharacters(query:String):List<MarvelData>
+    suspend fun searchCharacters(query:String):List<Characters>
 
 
 }

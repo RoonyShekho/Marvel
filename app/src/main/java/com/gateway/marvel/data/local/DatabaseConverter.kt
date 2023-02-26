@@ -7,110 +7,66 @@ import com.gateway.marvel.data.domain.Series
 import com.gateway.marvel.data.domain.Stories
 import com.gateway.marvel.data.domain.model.Thumbnail
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 class DatabaseConverter {
 
-   private val separator = ","
-
     @TypeConverter
-    fun convertListToString(list: List<String>): String {
-        val stringBuilder = StringBuilder()
-        for (item in list) {
-            stringBuilder.append(item).append(separator)
-        }
-        stringBuilder.setLength(stringBuilder.length - separator.length)
-        return stringBuilder.toString()
-    }
-
-    private var gson = Gson()
-
-    @TypeConverter
-    fun convertStringToList(string: String): List<String> = string.split(separator)
-
-
-
-   @TypeConverter
-    fun fromSeries(json: String): Series {
-        return gson.fromJson<Series>(
-            json,
-            object : TypeToken<Series>() {}.type
-        )
-    }
-
-
-
-    @TypeConverter
-    fun toSeries(data: String): String {
-        return gson.toJson(
-            data,
-            object : TypeToken<Series>() {}.type
-        )
-    }
-
-    @TypeConverter
-    fun fromEvents(json: String): Events {
-        return gson.fromJson<Events>(
-            json,
-            object : TypeToken<Events>() {}.type
-        )
-    }
-
-
-
-    @TypeConverter
-    fun toEvents(data: String): String {
-        return gson.toJson(
-            data,
-            object : TypeToken<Events>() {}.type
-        )
+    fun fromSeries(data: Series): String {
+        return Gson().toJson(data)
     }
 
 
     @TypeConverter
-    fun fromComics(json: String): Comics {
-        return gson.fromJson<Comics>(
-            json,
-            object : TypeToken<Comics>() {}.type
-        )
-    }
-
-
-
-    @TypeConverter
-    fun toComics(data: String): String {
-        return gson.toJson(
-            data,
-            object : TypeToken<Comics>() {}.type
-        )
+    fun toSeries(data: String): Series{
+        return Gson().fromJson(data, Series::class.java)
     }
 
 
     @TypeConverter
-    fun fromStories(json: String): Stories {
-        return gson.fromJson<Stories>(
-            json,
-            object : TypeToken<Stories>() {}.type
-        )
+    fun fromStories(data: Stories): String {
+        return Gson().toJson(data)
     }
 
 
+    @TypeConverter
+    fun toStories(data: String): Stories {
+        return Gson().fromJson(data, Stories::class.java)
+    }
+
 
     @TypeConverter
-    fun toStories(data: String): String {
-        return gson.toJson(
-            data,
-            object : TypeToken<Stories>() {}.type
-        )
+    fun fromComics(data: Comics): String {
+        return Gson().toJson(data)
+    }
+
+
+    @TypeConverter
+    fun toComics(data: String): Comics {
+        return Gson().fromJson(data, Comics::class.java)
+    }
+
+
+    @TypeConverter
+    fun fromEvents(data: Events): String {
+        return Gson().toJson(data)
+    }
+
+
+    @TypeConverter
+    fun toEvents(data: String): Events{
+        return Gson().fromJson(data, Events::class.java)
     }
 
 
 
 
     @TypeConverter
-    fun fromThumbnail(thumbnail: Thumbnail?): String? {
+    fun fromThumbnail(thumbnail: Thumbnail?): String {
         return thumbnail?.path + "." + thumbnail?.extension
     }
+
+
+
 
     @TypeConverter
     fun toThumbnail(thumbnailString: String?): Thumbnail? {

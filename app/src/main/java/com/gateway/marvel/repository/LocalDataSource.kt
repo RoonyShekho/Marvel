@@ -1,17 +1,18 @@
 package com.gateway.marvel.repository
 
-import com.gateway.marvel.data.domain.model.*
+import com.gateway.marvel.data.domain.model.Characters
+import com.gateway.marvel.data.utility.Resource
 
 
 interface LocalDataSource {
 
 
-    suspend fun getCharacters(): MarvelResponse
+    suspend fun getCharacters(): List<Characters>
 
 
-    suspend fun addCharacters(characters: List<MarvelData>)
+    suspend fun addCharacters(characters: List<Characters>)
 
-    suspend fun searchCharacters(query:String):MarvelData
+    suspend fun searchCharacters(query:String): Resource<List<Characters>>
 
 
 }

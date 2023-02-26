@@ -1,13 +1,11 @@
 package com.gateway.marvel.ui.screen.search
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gateway.marvel.data.domain.model.MarvelData
-import com.gateway.marvel.data.domain.model.MarvelResponse
+import com.gateway.marvel.data.domain.model.Data
 import com.gateway.marvel.data.repository.MarvelRepoImp
 import com.gateway.marvel.data.utility.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -25,7 +24,10 @@ class SearchViewModel @Inject constructor(
     private val _query = mutableStateOf("")
     val query = _query
 
-    var state by mutableStateOf<MarvelData?>(null)
+    var state by mutableStateOf(Data())
+        private set
+
+    var emptyResponseMessage by mutableStateOf("")
         private set
 
     private var job: Job? = null
@@ -36,11 +38,21 @@ class SearchViewModel @Inject constructor(
 
         // wait some time until making
         // the response
-
         job?.cancel()
         job = viewModelScope.launch {
-            delay(1000L)
-            searchCharacters()
+            delay(700L)
+
+
+            state.marvel?.let {
+                if (it.isEmpty() && value.isNotEmpty()) {
+                    emptyResponseMessage = "No results were found with the name $value"
+                }
+            }
+
+
+            if (query.value.isNotBlank()) {
+                searchCharacters()
+            }
         }
     }
 
@@ -48,15 +60,17 @@ class SearchViewModel @Inject constructor(
     private fun searchCharacters() {
 
         viewModelScope.launch {
-            repository.searchMarvel(query.value).let { response ->
+            repository.searchMarvel(query.value.trim()).let { response ->
                 when (response) {
                     is Resource.Error -> {
                         //TODO: Show a SnackBar or Toast message
                     }
                     is Resource.Loading -> {
-                        //TODO: Show a ProgressIndicator
+                        //TODO: Show a PorgressIndicator
                     }
-                    is Resource.Success -> state = response.data!!
+                    is Resource.Success -> state = state.copy(
+                        marvelData = response.data
+                    )
                 }
             }
         }
@@ -64,3 +78,4 @@ class SearchViewModel @Inject constructor(
 
 
 }
+

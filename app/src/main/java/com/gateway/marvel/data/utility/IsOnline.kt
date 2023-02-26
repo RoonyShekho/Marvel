@@ -20,3 +20,8 @@ fun checkIfOnline(context: Context): Boolean {
         cm?.activeNetworkInfo?.isConnectedOrConnecting == true
     }
 }
+
+
+
+
+

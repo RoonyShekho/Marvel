@@ -6,20 +6,22 @@ import com.gateway.marvel.data.domain.Comics
 import com.gateway.marvel.data.domain.Events
 import com.gateway.marvel.data.domain.Series
 import com.gateway.marvel.data.domain.Stories
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
 @Serializable
 @Entity(tableName = "marvel_table")
-data class MarvelData(
+data class Characters(
     @PrimaryKey var id:Int? = null,
-    val title:String? = null,
+    @SerialName("name")
+    val name:String = "",
     val description:String? = null,
     val thumbnail: Thumbnail? = null,
-    val series: Series,
-    val stories: Stories,
-    val comics: Comics,
-    val events: Events,
+    val series: Series = Series(),
+    val stories: Stories = Stories(),
+    val comics: Comics = Comics(),
+    val events: Events = Events()
 )
 
 

@@ -2,7 +2,6 @@ package com.gateway.marvel.di
 
 import android.app.Application
 import android.content.Context
-import com.gateway.marvel.data.domain.use_cases.*
 import com.gateway.marvel.data.local.MarvelDatabase
 import com.gateway.marvel.data.repository.LocalDataSourceImp
 import com.gateway.marvel.data.repository.MarvelRepoImp
@@ -24,7 +23,7 @@ object RepositoryModule {
     fun provideRepository(
         local: LocalDataSource,
         remote: RemoteDataSource,
-        context: Context
+        context:Context
     ): MarvelRepository {
         return MarvelRepoImp(local = local, remote = remote, context = context)
     }
@@ -40,21 +39,8 @@ object RepositoryModule {
     fun localDataSource(
         db: MarvelDatabase
     ): LocalDataSource {
-        return LocalDataSourceImp(db.marvelDao)
+        return LocalDataSourceImp(db)
     }
 
-
-    @Provides
-    @Singleton
-    fun provideUserCases(repository: MarvelRepository): UseCase =
-        UseCase(
-            getCartoonsUseCase = GetCartoonsUseCase(repository),
-            getCharactersUseCase = GetCharactersUseCase(repository),
-            getSeriesUseCase = GetSeriesUseCase(repository),
-            getStoriesUseCase = GetStoriesUseCase(repository),
-            getEventsUseCase = GetEventsUseCase(repository),
-            getComicsUseCase = GetComicsUseCase(repository),
-            searchCharactersUseCase = SearchCharactersUseCase(repository)
-        )
 
 }

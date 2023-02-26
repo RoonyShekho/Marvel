@@ -1,25 +1,25 @@
 package com.gateway.marvel.repository
 
 
-import com.gateway.marvel.data.domain.model.*
+import com.gateway.marvel.data.domain.model.Characters
 import com.gateway.marvel.data.utility.Resource
-import kotlinx.coroutines.flow.Flow
 
 
 interface RemoteDataSource{
 
-    suspend fun getCharacters():Resource<MarvelResponse>
+    suspend fun getCharacters():Resource<List<Characters>>
 
-    suspend fun getComics(): Resource<MarvelResponse>
+    suspend fun getComics(): Resource<List<Characters>>
 
-    suspend fun getSeries(): Resource<MarvelResponse>
+    suspend fun getSeries():Resource<List<Characters>>
 
-    suspend fun getStories(): Resource<MarvelResponse>
+    suspend fun getStories(): Resource<List<Characters>>
 
-    suspend fun getEvents(): Resource<MarvelResponse>
+    suspend fun getEvents(): Resource<List<Characters>>
 
-    suspend fun getCartoons(): Resource<MarvelResponse>
+    suspend fun getCartoons(): Resource<List<Characters>>
 
-    suspend fun searchMarvel(name:String):Resource<MarvelData>
+    suspend fun searchCharacters(name:String):Resource<List<Characters>>
+
 
 }
