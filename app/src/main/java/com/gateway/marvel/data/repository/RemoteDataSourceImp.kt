@@ -1,15 +1,18 @@
 package com.gateway.marvel.data.repository
 
 
+import android.content.Context
 import com.gateway.marvel.data.domain.model.Characters
 import com.gateway.marvel.data.remote.MarvelAPI
 import com.gateway.marvel.data.utility.Resource
+import com.gateway.marvel.data.utility.checkIfOnline
 import com.gateway.marvel.repository.RemoteDataSource
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
 class RemoteDataSourceImp(
-    private val api: MarvelAPI
+    private val api: MarvelAPI,
+    private val context:Context
 ) : RemoteDataSource {
 
 
@@ -47,7 +50,14 @@ class RemoteDataSourceImp(
         return try {
             Resource.Loading<T>()
 
-            Resource.Success(data = response)
+            return if(checkIfOnline(context)) {
+
+                Resource.Success(data = response)
+            }else{
+                Resource.Error("Internet unavailable")
+            }
+
+
         } catch (e: HttpException) {
             Resource.Error(e.message)
         } catch (e: SocketTimeoutException) {

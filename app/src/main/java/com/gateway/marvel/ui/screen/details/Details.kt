@@ -1,5 +1,6 @@
 package com.gateway.marvel.ui.screen.details
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,6 +11,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,8 +40,6 @@ fun Details(
     DetailsContent(vm = vm) {
         navController.popBackStack()
     }
-
-
 }
 
 
@@ -51,16 +53,20 @@ fun DetailsContent(vm: DetailsViewModel, onBackPressed: () -> Unit) {
 
     val state = vm.uiState
 
+    val isOnline by remember { mutableStateOf(checkIfOnline(context)) }
+
 
     val selectedCategory = vm.selectedCategory
 
 
-    if (!checkIfOnline(context)) {
+    if (!isOnline) {
+        Log.d("Details", "Internet not available")
         Box(modifier = Modifier.fillMaxSize()) {
             Text(text = "No internet connection!")
         }
     } else {
 
+        Log.d("Details", "Internet available")
         Scaffold(
             topBar = {
                 TopAppBar(

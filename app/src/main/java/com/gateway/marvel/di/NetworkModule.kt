@@ -1,5 +1,6 @@
 package com.gateway.marvel.di
 
+import android.content.Context
 import com.gateway.marvel.data.remote.MarvelAPI
 import com.gateway.marvel.data.repository.RemoteDataSourceImp
 import com.gateway.marvel.data.utility.Constants
@@ -68,9 +69,10 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideRemoteDataSource(
-        api:MarvelAPI
+        api:MarvelAPI,
+        context:Context
     ):RemoteDataSource{
-        return RemoteDataSourceImp(api)
+        return RemoteDataSourceImp(api, context)
     }
 
 

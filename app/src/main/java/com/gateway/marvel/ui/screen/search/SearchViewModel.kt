@@ -43,7 +43,7 @@ class SearchViewModel @Inject constructor(
             delay(700L)
 
 
-            state.marvel?.let {
+            state.marvelData?.let {
                 if (it.isEmpty() && value.isNotEmpty()) {
                     emptyResponseMessage = "No results were found with the name $value"
                 }

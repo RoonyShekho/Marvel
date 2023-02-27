@@ -108,7 +108,10 @@ fun ItemCard(
     ) {
 
         val model = "${characters.thumbnail?.path}.${characters.thumbnail?.extension}"
-        Row {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
             CoilImage(
                 imageModel = { model },
                 modifier = Modifier.size(72.dp)

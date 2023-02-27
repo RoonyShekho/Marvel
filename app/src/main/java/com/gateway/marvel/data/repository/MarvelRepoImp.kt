@@ -9,6 +9,9 @@ import com.gateway.marvel.data.utility.checkIfOnline
 import com.gateway.marvel.repository.LocalDataSource
 import com.gateway.marvel.repository.MarvelRepository
 import com.gateway.marvel.repository.RemoteDataSource
+import com.gateway.marvel.ui.screen.details.MarvelCategories
+import retrofit2.HttpException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 class MarvelRepoImp @Inject constructor(
@@ -21,51 +24,56 @@ class MarvelRepoImp @Inject constructor(
     override suspend fun searchMarvel(query: String): Resource<List<Characters>> {
         val cacheFromDatabase = local.getCharacters().isNotEmpty() || !checkIfOnline(context)
 
-        Log.d("Repository", cacheFromDatabase.toString())
-
-        return local.searchCharacters(query)
+        return if (cacheFromDatabase) {
+            local.searchCharacters(query)
+        }else{
+            remote.searchCharacters(query)
+        }
     }
-
 
     override suspend fun getCharacters(): Resource<List<Characters>> {
         val response = remote.getCharacters()
         local.addCharacters(response.data!!)
-        return returnIfOnline(response, context)
+        return handleRemoteResponse (response.data, context)
     }
 
 
-    override suspend fun getComics(): Resource<List<Characters>> {
-        return returnIfOnline(remote.getComics(), context)
-
+    override suspend fun getDetailsData(category:MarvelCategories):Resource<List<Characters>>{
+        return when(category){
+            MarvelCategories.Characters -> getCharacters()
+            MarvelCategories.Comics -> remote.getComics()
+            MarvelCategories.Series -> remote.getSeries()
+            MarvelCategories.Stories -> remote.getStories()
+            MarvelCategories.Events -> remote.getEvents()
+            MarvelCategories.Cartoons -> remote.getCartoons()
+        }
     }
 
-    override suspend fun getSeries(): Resource<List<Characters>> {
-        return returnIfOnline(remote.getSeries(), context)
-    }
-    override suspend fun getStories(): Resource<List<Characters>> {
-        return returnIfOnline(remote.getStories(), context)
-    }
-
-    override suspend fun getEvents(): Resource<List<Characters>> {
-        return returnIfOnline(remote.getEvents(), context)
-    }
-
-    override suspend fun getCartoons(): Resource<List<Characters>> {
-        return returnIfOnline(remote.getCartoons(), context)
-    }
-
-    override suspend fun insertCharacters(characters: List<Characters>) {
-        local.addCharacters(characters)
-    }
 
 }
 
 
-private fun returnIfOnline(response:Resource<List<Characters>>, context:Context):Resource<List<Characters>>{
-    return if(checkIfOnline(context)){
-        response
-    }else{
-        Resource.Error("No internet connection")
+
+private fun <T> handleRemoteResponse(response: T, context: Context): Resource<T> {
+    return try {
+        Resource.Loading<T>()
+
+        return if(checkIfOnline(context)) {
+            Resource.Success(data = response)
+        }else{
+            Log.d("Repository", "Internet unavailable")
+            Resource.Error("Internet unavailable")
+        }
+
+
+    } catch (e: HttpException) {
+        Resource.Error(e.message)
+    } catch (e: SocketTimeoutException) {
+        Resource.Error(e.message)
+    } catch (e: java.net.UnknownHostException) {
+        Resource.Error(e.message)
+    } catch (e: Exception) {
+        Resource.Error(e.message)
     }
 }
 
