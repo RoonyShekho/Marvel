@@ -1,6 +1,5 @@
 package com.gateway.marvel.ui.screen.details
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -11,12 +10,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,7 +20,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.gateway.marvel.R
 import com.gateway.marvel.data.domain.model.Characters
-import com.gateway.marvel.data.utility.checkIfOnline
 import com.skydoves.landscapist.coil.CoilImage
 
 
@@ -35,6 +30,7 @@ fun Details(
     vm: DetailsViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+
 
 
     DetailsContent(vm = vm) {
@@ -48,39 +44,33 @@ fun Details(
 @Composable
 fun DetailsContent(vm: DetailsViewModel, onBackPressed: () -> Unit) {
 
-
-    val context = LocalContext.current
-
     val state = vm.uiState
 
-    val isOnline by remember { mutableStateOf(checkIfOnline(context)) }
-
+    val isLoading = vm.isLoading
 
     val selectedCategory = vm.selectedCategory
 
 
-    if (!isOnline) {
-        Log.d("Details", "Internet not available")
-        Box(modifier = Modifier.fillMaxSize()) {
-            Text(text = "No internet connection!")
-        }
-    } else {
 
-        Log.d("Details", "Internet available")
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            onBackPressed()
-                        }) {
-                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
-                        }
-                    },
-                    title = { Text(text = selectedCategory) }
-                )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = {
+                        onBackPressed()
+                    }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                    }
+                },
+                title = { Text(text = selectedCategory) }
+            )
+        }
+    ) { paddingValues ->
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-        ) { paddingValues ->
+        } else {
             state.marvelData?.let {
                 MarvelData(it, paddingValues = paddingValues)
             }

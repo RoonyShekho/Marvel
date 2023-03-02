@@ -2,7 +2,7 @@ package com.gateway.marvel.data.repository
 
 import com.gateway.marvel.data.domain.model.Characters
 import com.gateway.marvel.data.local.MarvelDatabase
-import com.gateway.marvel.data.utility.Resource
+import com.gateway.marvel.data.utility.MarvelResult
 import com.gateway.marvel.repository.LocalDataSource
 import javax.inject.Inject
 
@@ -22,12 +22,11 @@ class LocalDataSourceImp @Inject constructor(
         dao.addCharacters(characters)
     }
 
-    override suspend fun searchCharacters(query: String): Resource<List<Characters>> {
+    override suspend fun searchCharacters(query: String): MarvelResult {
         return try {
-            Resource.Loading<Characters>()
-            Resource.Success(dao.searchCharacters(query))
+            MarvelResult.Success(dao.searchCharacters(query))
         } catch (e: Exception) {
-            Resource.Error(e.message)
+            MarvelResult.Error(e.message)
         }
     }
 }

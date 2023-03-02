@@ -2,8 +2,8 @@ package com.gateway.marvel.ui.screen.search
 
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -29,7 +29,9 @@ fun Search(
 
     val query by vm.query
 
-    val state = vm.state
+    val state = vm.uiState
+
+    val isLoading = vm.isLoading
 
 
     var onTrailingClicked by remember { mutableStateOf(false) }
@@ -62,31 +64,32 @@ fun Search(
                 enabled = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            {
-
-            }
+            {}
         }
     ) { paddingValues ->
 
-        LazyColumn(
-            verticalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            item {
-                state.marvelData?.let {
-                    if (it.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = emptyResponseMessage)
-                        }
-                    } else {
-                        ItemCard(
-                            modifier = Modifier.padding(paddingValues),
-                            characters = state.marvelData[0]
-                        )
-
+            state.marvelData?.let {
+                if (it.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = emptyResponseMessage)
                     }
+                } else {
+                    ItemCard(
+                        modifier = Modifier.padding(paddingValues),
+                        characters = state.marvelData[0]
+                    )
+
+                }
+            }
+            if(isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
 

@@ -1,25 +1,24 @@
 package com.gateway.marvel.repository
 
 
-import com.gateway.marvel.data.domain.model.Characters
-import com.gateway.marvel.data.utility.Resource
+import com.gateway.marvel.data.utility.MarvelResult
 
 
 interface RemoteDataSource{
 
-    suspend fun getCharacters():Resource<List<Characters>>
+    suspend fun getCharacters(): MarvelResult
 
-    suspend fun getComics(): Resource<List<Characters>>
+    suspend fun getComics(): MarvelResult
 
-    suspend fun getSeries():Resource<List<Characters>>
+    suspend fun getSeries():MarvelResult
 
-    suspend fun getStories(): Resource<List<Characters>>
+    suspend fun getStories(): MarvelResult
 
-    suspend fun getEvents(): Resource<List<Characters>>
+    suspend fun getEvents(): MarvelResult
 
-    suspend fun getCartoons(): Resource<List<Characters>>
+    suspend fun getCartoons(): MarvelResult
 
-    suspend fun searchCharacters(name:String):Resource<List<Characters>>
+    suspend fun searchCharacters(name:String):MarvelResult
 
 
 }

@@ -1,13 +1,14 @@
 package com.gateway.marvel.ui.screen.search
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gateway.marvel.data.domain.model.Data
 import com.gateway.marvel.data.repository.MarvelRepoImp
-import com.gateway.marvel.data.utility.Resource
+import com.gateway.marvel.data.utility.MarvelResult
+import com.gateway.marvel.data.utility.MarvelState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,8 +25,13 @@ class SearchViewModel @Inject constructor(
     private val _query = mutableStateOf("")
     val query = _query
 
-    var state by mutableStateOf(Data())
+
+    var uiState by mutableStateOf(MarvelState())
         private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
 
     var emptyResponseMessage by mutableStateOf("")
         private set
@@ -35,22 +41,24 @@ class SearchViewModel @Inject constructor(
     fun setQuery(value: String) {
         _query.value = value
 
-
         // wait some time until making
         // the response
         job?.cancel()
         job = viewModelScope.launch {
+
             delay(700L)
 
+            isLoading = true
 
-            state.marvelData?.let {
+            uiState.marvelData?.let {
+                isLoading = false
                 if (it.isEmpty() && value.isNotEmpty()) {
-                    emptyResponseMessage = "No results were found with the name $value"
+                    emptyResponseMessage = "No results were found with the name $query"
                 }
             }
 
 
-            if (query.value.isNotBlank()) {
+            if (_query.value.isNotBlank()) {
                 searchCharacters()
             }
         }
@@ -59,18 +67,25 @@ class SearchViewModel @Inject constructor(
 
     private fun searchCharacters() {
 
+        isLoading = true
         viewModelScope.launch {
-            repository.searchMarvel(query.value.trim()).let { response ->
+            repository.searchMarvel(_query.value.trim()).let { response ->
                 when (response) {
-                    is Resource.Error -> {
-                        //TODO: Show a SnackBar or Toast message
+                    is MarvelResult.Error -> {
+                        Log.d("Search", response.message!!)
+                        isLoading = false
                     }
-                    is Resource.Loading -> {
-                        //TODO: Show a PorgressIndicator
+                    MarvelResult.Loading -> {
+                        uiState = uiState.copy(
+                            isLoading = true
+                        )
                     }
-                    is Resource.Success -> state = state.copy(
-                        marvelData = response.data
-                    )
+                    is MarvelResult.Success -> {
+                        uiState = uiState.copy(
+                            marvelData = response.data
+                        )
+                        isLoading = false
+                    }
                 }
             }
         }

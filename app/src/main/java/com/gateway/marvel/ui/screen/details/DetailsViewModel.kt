@@ -7,9 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gateway.marvel.data.domain.model.Characters
-import com.gateway.marvel.data.domain.model.Data
-import com.gateway.marvel.data.utility.Resource
+import com.gateway.marvel.data.utility.MarvelResult
+import com.gateway.marvel.data.utility.MarvelState
 import com.gateway.marvel.repository.MarvelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -24,12 +23,14 @@ class DetailsViewModel @Inject constructor(
 
 
     var selectedCategory by mutableStateOf("")
-    private set
-
-
-    var uiState by mutableStateOf(Data())
         private set
 
+
+    var uiState by mutableStateOf(MarvelState())
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
 
 
     init {
@@ -40,7 +41,6 @@ class DetailsViewModel @Inject constructor(
         getData(MarvelCategories.valueOf(selectedCategory))
     }
 
-
     private fun getData(category: MarvelCategories) {
         viewModelScope.launch {
             handleResponse(repository.getDetailsData(category))
@@ -48,20 +48,31 @@ class DetailsViewModel @Inject constructor(
     }
 
 
-    private fun handleResponse(response: Resource<List<Characters>>) {
+    private fun handleResponse(response: MarvelResult) {
 
-        response.let {
-            when (it) {
-                is Resource.Error -> {
-                    //TODO: Show a SnackBar or Toast message
-                }
-                is Resource.Loading -> {
-                }
-                is Resource.Success -> {
-                    uiState = uiState.copy(
-                        marvelData = it.data
-                    )
-                }
+        isLoading = true
+
+
+        when (response) {
+            is MarvelResult.Error -> {
+                uiState = uiState.copy(
+                    error = response.message
+                )
+                isLoading = false
+            }
+            MarvelResult.Loading -> {
+                uiState = uiState.copy(
+                    isLoading = true
+                )
+
+            }
+            is MarvelResult.Success -> {
+                uiState = uiState.copy(
+                    marvelData = response.data,
+                    isLoading = false
+                )
+
+                isLoading = false
             }
         }
     }
